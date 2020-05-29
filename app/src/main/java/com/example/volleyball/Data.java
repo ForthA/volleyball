@@ -7,6 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 class Data {
@@ -35,10 +39,20 @@ class Data {
     }
 
     public void insertRound(Round round) {
+        int tm = 1;
+        int sm = 0;
+        if (round.team1 == true) {
+            tm = 1;
+            sm = 0;
+        }
+        else {
+            sm = 1;
+            tm = 0;
+        }
         ContentValues contentValues = new ContentValues();
         contentValues.put(ROUND_MATCH_ID, round.matchid);
-        contentValues.put(MATCH_ROW_TEAM_FIRST,round.team1);
-        contentValues.put(SCORE, round.team2);
+        contentValues.put(TABLE_ROW_FIRST,tm);
+        contentValues.put(TABLE_ROW_SECOND, sm);
         db.insert(TABLE_ROUND,null,contentValues);
     }
     public void insertGame(GameInfo gameInfo){
@@ -50,9 +64,30 @@ class Data {
         db.insert(TABLE_GAME,null,contentValues);
 
     }
-   public ArrayList<Round> writeRounds(){
+   public ArrayList<Round> writeRounds(int id){
     ArrayList<Round> rounds = new ArrayList<>();
-       Cursor cursor = db.query(TABLE_ROUND, null, null, null, null, null, null);
+       Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ROUND + "WHERE match_id = " + id + "",null);
+       if (cursor.moveToFirst()) {
+           int matchid = cursor.getColumnIndex(ROUND_MATCH_ID);
+           int team1Index = cursor.getColumnIndex(TABLE_ROW_FIRST);
+           int team2Index = cursor.getColumnIndex(TABLE_ROW_SECOND);
+           do {
+               boolean tm = true;
+               boolean sm = false;
+               if (cursor.getInt(team1Index) == 1) {
+                   tm = true;
+                   sm = false;
+               }
+               else {
+                   sm = true;
+                   tm = false;
+               }
+               rounds.add(new Round(1,cursor.getInt(matchid),tm,sm));
+           } while (cursor.moveToNext());
+       } else
+           Log.d("mLog","0 rows");
+
+       cursor.close();
        return rounds;
 
    }

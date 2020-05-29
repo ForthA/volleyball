@@ -36,10 +36,6 @@ public class ResultGameFragment extends Fragment {
     public ResultGameFragment() {
         // Required empty public constructor
 
-        list = new ArrayList<>();
-        list.add(new Round(1, 1590077643, false, true));
-        list.add(new Round(2, 1590077700, true, false));
-        list.add(new Round(3, 1590077750, false, true));
     }
 
     /**
@@ -75,7 +71,8 @@ public class ResultGameFragment extends Fragment {
         // Inflate the layout for this fragment
         Log.d("list", "" + list.size());
         View view = inflater.inflate(R.layout.fragment_result_game, container, false);
-
+        Data data = new Data(view.getContext());
+        list = data.writeRounds(1);
         recyclerView = view.findViewById(R.id.recycler_round);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
