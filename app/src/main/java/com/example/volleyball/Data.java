@@ -21,7 +21,7 @@ class Data {
     public static final String TABLE_ROW_TSM = "tsm";
 
     private static final String DB_NAME = "volleyball_db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 9;
     private static final String TABLE_GAME = "games";
     private static final String DATE = "date";
     private static final String MATCH_ROW_TEAM_FIRST = "teamfirst";
@@ -30,8 +30,8 @@ class Data {
 
     private static final String TABLE_ROUND = "round";
     private static final String ROUND_MATCH_ID = "match_id";
-    private static final String TABLE_ROW_FIRST = "teamFirstBOOL";
-    private static final String TABLE_ROW_SECOND = "teamSecondBOOL";
+    private static final String ROUND_TEAM1 = "team1";
+    private static final String ROUND_TEAM2 = "team2";
 
     public Data(Context context) {
         CustomSQLiteOpenHelper helper = new CustomSQLiteOpenHelper(context);
@@ -50,64 +50,70 @@ class Data {
             tm = 0;
         }
         ContentValues contentValues = new ContentValues();
-        contentValues.put(ROUND_MATCH_ID, round.matchid);
-        contentValues.put(TABLE_ROW_FIRST,tm);
-        contentValues.put(TABLE_ROW_SECOND, sm);
-        db.insert(TABLE_ROUND,null,contentValues);
+
+        contentValues.put(ROUND_MATCH_ID, round.match_id);
+        contentValues.put(ROUND_TEAM1, round.team1);
+        contentValues.put(ROUND_TEAM2, round.team2);
+        contentValues.put(TABLE_ROW_TSM, round.time);
+
+        db.insert(TABLE_ROUND, null, contentValues);
+
     }
-    public void insertGame(GameInfo gameInfo){
+
+    public long insertGame(GameInfo gameInfo) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(DATE,gameInfo.date);
-        contentValues.put(MATCH_ROW_TEAM_FIRST,gameInfo.firstTeam);
-        contentValues.put(SCORE,gameInfo.score);
-        contentValues.put(MATCH_ROW_TEAM_SECOND,gameInfo.secondTeam);
-        db.insert(TABLE_GAME,null,contentValues);
+        contentValues.put(DATE, gameInfo.date);
+        contentValues.put(MATCH_ROW_TEAM_FIRST, gameInfo.firstTeam);
+        contentValues.put(SCORE, gameInfo.score);
+        contentValues.put(MATCH_ROW_TEAM_SECOND, gameInfo.secondTeam);
+
+        return db.insert(TABLE_GAME, null, contentValues);
 
     }
-   public ArrayList<Round> writeRounds(int id){
-    ArrayList<Round> rounds = new ArrayList<>();
-       Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ROUND + "WHERE match_id = " + id + "",null);
-       if (cursor.moveToFirst()) {
-           int matchid = cursor.getColumnIndex(ROUND_MATCH_ID);
-           int team1Index = cursor.getColumnIndex(TABLE_ROW_FIRST);
-           int team2Index = cursor.getColumnIndex(TABLE_ROW_SECOND);
-           do {
-               boolean tm = true;
-               boolean sm = false;
-               if (cursor.getInt(team1Index) == 1) {
-                   tm = true;
-                   sm = false;
-               }
-               else {
-                   sm = true;
-                   tm = false;
-               }
-               rounds.add(new Round(1,cursor.getInt(matchid),tm,sm));
-           } while (cursor.moveToNext());
-       } else
-           Log.d("mLog","0 rows");
 
-       cursor.close();
-       return rounds;
+    public ArrayList<Round> getRounds(long match_id){
+        ArrayList<Round> rounds = new ArrayList<>();
 
-   }
-   public ArrayList<GameInfo> writeGames(){
-       Cursor cursor = db.query(TABLE_GAME, null, null, null, null, null, null);
-       ArrayList<GameInfo> gameInfos = new ArrayList<>();
-       if (cursor.moveToFirst()) {
-           int dateIndex = cursor.getColumnIndex(DATE);
-           int team1Index = cursor.getColumnIndex(MATCH_ROW_TEAM_FIRST);
-           int scoreIndex = cursor.getColumnIndex(SCORE);
-           int team2Index = cursor.getColumnIndex(MATCH_ROW_TEAM_SECOND);
-           do {
-               gameInfos.add(new GameInfo(cursor.getString(dateIndex),cursor.getString(team1Index),cursor.getString(scoreIndex),cursor.getString(team2Index)));
-           } while (cursor.moveToNext());
-       } else
-           Log.d("mLog","0 rows");
+        Cursor cursor = db.query(TABLE_ROUND, null, "match_id = ?", new String[]{"" + match_id}, null, null, null);
+        if (cursor.moveToFirst()) {
+            int idIndex = cursor.getColumnIndex(TABLE_ROW_ID);
+            int team1Index = cursor.getColumnIndex(ROUND_TEAM1);
+            int team2Index = cursor.getColumnIndex(ROUND_TEAM2);
+            int tsmIndex = cursor.getColumnIndex(TABLE_ROW_TSM);
+            do {
+                int id = Integer.parseInt(cursor.getString(idIndex));
+                Boolean team1 = cursor.getString(team1Index).equals("1");
+                Boolean team2 = cursor.getString(team2Index).equals("1");
+                long tsm = Long.parseLong(cursor.getString(tsmIndex));
 
-       cursor.close();
-       return gameInfos;
-   }
+                rounds.add(new Round(id, team1, team2, tsm));
+            } while (cursor.moveToNext());
+        }
+
+        return rounds;
+    }
+
+    public ArrayList<GameInfo> writeGames(){
+        Cursor cursor = db.query(TABLE_GAME, null, null, null, null, null, null);
+        ArrayList<GameInfo> gameInfos = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            int idIndex = cursor.getColumnIndex(TABLE_ROW_ID);
+            int dateIndex = cursor.getColumnIndex(DATE);
+            int team1Index = cursor.getColumnIndex(MATCH_ROW_TEAM_FIRST);
+            int scoreIndex = cursor.getColumnIndex(SCORE);
+            int team2Index = cursor.getColumnIndex(MATCH_ROW_TEAM_SECOND);
+            do {
+                int id = Integer.parseInt(cursor.getString(idIndex));
+                gameInfos.add(new GameInfo(id, cursor.getString(dateIndex), cursor.getString(team1Index), cursor.getString(scoreIndex), cursor.getString(team2Index)));
+            } while (cursor.moveToNext());
+        } else {
+            Log.d("mLog", "0 rows");
+        }
+
+        cursor.close();
+        return gameInfos;
+    }
+
     private class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
         public CustomSQLiteOpenHelper(Context context) {
             super(context, DB_NAME, null, DB_VERSION);
@@ -128,14 +134,16 @@ class Data {
                     + TABLE_ROUND + "("
                     + TABLE_ROW_ID + " integer primary key autoincrement not null, "
                     + ROUND_MATCH_ID + " integer not null, "
-                    + TABLE_ROW_FIRST + " integer not null,"
-                    + TABLE_ROW_SECOND + " integer not null)";
+                    + ROUND_TEAM1 + " integer not null, "
+                    + ROUND_TEAM2 + " integer not null, "
+                    + TABLE_ROW_TSM + " int8 not null)";
             db.execSQL(newTableRoundQuery);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL("drop table if exists " + TABLE_GAME);
+            db.execSQL("drop table if exists " + TABLE_ROUND);
 
             onCreate(db);
         }

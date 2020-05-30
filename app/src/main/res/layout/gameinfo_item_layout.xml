@@ -6,29 +6,33 @@
 
     <TextView
         android:id="@+id/gameinfo_date"
-        android:layout_width="2dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:gravity="center"
         android:text="Дата" />
 
     <TextView
         android:id="@+id/gameinfo_team1"
-        android:layout_width="135dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:gravity="center"
         android:text="Команда1" />
 
     <TextView
         android:id="@+id/gameinfo_score"
-        android:layout_width="1dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:gravity="center"
         android:text="Счёт" />
 
     <TextView
         android:id="@+id/gameinfo_team2"
-        android:layout_width="115dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:gravity="center"
         android:text="Команда 2" />
 </LinearLayout>

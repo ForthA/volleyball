@@ -16,7 +16,9 @@ import android.view.ViewGroup;
  * Use the {@link GameFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class GameFragment extends Fragment implements View.OnTouchListener {
+public class GameFragment extends Fragment {
+    public static final String KEY_TEAM1 = "team1";
+    public static final String KEY_TEAM2 = "team2";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -63,20 +65,16 @@ public class GameFragment extends Fragment implements View.OnTouchListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        String team1Name = getArguments().getString(KEY_TEAM1);
+        String team2Name = getArguments().getString(KEY_TEAM2);
+
+        GameInfo gameInfo = new GameInfo(team1Name, team2Name);
+
         float density = getResources().getDisplayMetrics().density;
         match = new Match(getContext(), container.getWidth(), container.getHeight(), density);
+        match.setGameInfo(gameInfo);
 
         return match;
-    }
-
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
-//            Navigation.findNavController(v).navigate(R.id.matchToGame);
-        }
-
-        return true;
     }
 
     @Override

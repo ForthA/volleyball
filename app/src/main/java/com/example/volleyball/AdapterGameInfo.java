@@ -44,29 +44,32 @@ class AdapterGameInfo extends RecyclerView.Adapter<AdapterGameInfo.ViewHolder> {
         return list.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         TextView date;
         TextView team1;
         TextView score;
         TextView team2;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull final View itemView) {
             super(itemView);
 
             date = itemView.findViewById(R.id.gameinfo_date);
             team1 = itemView.findViewById(R.id.gameinfo_team1);
             score = itemView.findViewById(R.id.gameinfo_score);
             team2 = itemView.findViewById(R.id.gameinfo_team2);
-            date.setOnClickListener(this);
-            team1.setOnClickListener(this);
-            score.setOnClickListener(this);
-            team2.setOnClickListener(this);
-        }
 
-        @Override
-        public void onClick(View v) {
-            Bundle b = new Bundle();
-            Navigation.findNavController(v).navigate(R.id.gamesToGame);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    GameInfo gameInfo = list.get(position);
+
+                    Bundle b = new Bundle();
+                    b.putLong(ResultGameFragment.KEY_MATCH_ID, gameInfo.id);
+                    Navigation.findNavController(itemView).navigate(R.id.gamesToGame, b);
+                }
+            });
         }
     }
 }

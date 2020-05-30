@@ -1,11 +1,13 @@
 package com.example.volleyball;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -47,13 +49,25 @@ class AdapterRound extends RecyclerView.Adapter<AdapterRound.ViewHolder> {
         TextView team1;
         TextView team2;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull final View itemView) {
             super(itemView);
 
             n = itemView.findViewById(R.id.round_n);
             time = itemView.findViewById(R.id.round_time);
             team1 = itemView.findViewById(R.id.round_team1);
             team2 = itemView.findViewById(R.id.round_team2);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    Round round = list.get(position);
+
+                    Bundle b = new Bundle();
+                    b.putLong(RoundFragment.KEY_ROUND_ID, round.id);
+                    Navigation.findNavController(itemView).navigate(R.id.gameToRound, b);
+                }
+            });
         }
     }
 }
